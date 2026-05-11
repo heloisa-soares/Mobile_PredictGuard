@@ -2,4 +2,14 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Status das OS -->
+    <color name="status_solicitado">#FF9800</color>
+    <color name="status_andamento">#2196F3</color>
+    <color name="status_concluido">#4CAF50</color>
+
+    <!-- Saúde das Máquinas -->
+    <color name="ok_green">#4CAF50</color>
+    <color name="alerta_red">#F44336</color>
+
 </resources>

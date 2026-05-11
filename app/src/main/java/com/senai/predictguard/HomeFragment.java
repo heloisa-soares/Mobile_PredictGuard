@@ -20,7 +20,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.senai.predictguard.adapter.OSAdapter;
 import com.senai.predictguard.model.OS;
-import com.senai.predictguard.model.Servico;
 import com.senai.predictguard.model.request.ServicoUpdateRequest;
 import com.senai.predictguard.model.response.GenericResponse;
 import com.senai.predictguard.model.response.ServicoListResponse;

@@ -25,14 +25,27 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- ✅ tvSubtitle renomeado para tvDemandas (mesmo visual) -->
     <TextView
-        android:id="@+id/tvSubtitle"
+        android:id="@+id/tvDemandas"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Você tem 3 novas demandas"
         android:textColor="#D1E4FF"
         app:layout_constraintStart_toStartOf="@id/tvWelcomeTec"
         app:layout_constraintTop_toBottomOf="@id/tvWelcomeTec" />
+
+    <!-- ✅ tvTipoUsuario adicionado invisível (não aparece na tela) -->
+    <TextView
+        android:id="@+id/tvTipoUsuario"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:text="Técnico"
+        android:textColor="#A8CCFF"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="@id/tvWelcomeTec"
+        app:layout_constraintTop_toBottomOf="@id/tvDemandas" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardStatus"
@@ -79,6 +92,16 @@
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cardStatus" />
+
+    <!-- ✅ progressBar adicionado invisível (aparece só durante o loading) -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitleList" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvDemands"

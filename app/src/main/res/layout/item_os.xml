@@ -18,12 +18,13 @@
             android:layout_width="4dp"
             android:layout_height="0dp"
             android:background="#FF5252"
-            app:layout_constraintBottom_toBottomOf="@id/tvDescricaoCurta"
+            app:layout_constraintBottom_toBottomOf="@id/tvDescricaoOS"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tvTituloDemanda" />
+            app:layout_constraintTop_toTopOf="@id/tvTituloOS" />
 
+        <!-- ✅ tvTituloDemanda → tvTituloOS -->
         <TextView
-            android:id="@+id/tvTituloDemanda"
+            android:id="@+id/tvTituloOS"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
@@ -46,8 +47,9 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
+            <!-- ✅ tvStatusTexto → tvStatusOS -->
             <TextView
-                android:id="@+id/tvStatusTexto"
+                android:id="@+id/tvStatusOS"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="12dp"
@@ -58,8 +60,9 @@
                 android:textStyle="bold" />
         </androidx.cardview.widget.CardView>
 
+        <!-- ✅ tvDescricaoCurta → tvDescricaoOS -->
         <TextView
-            android:id="@+id/tvDescricaoCurta"
+            android:id="@+id/tvDescricaoOS"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
@@ -68,9 +71,9 @@
             android:text="Setor de Produção - Bloco B"
             android:textColor="#64748B"
             android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="@id/tvTituloDemanda"
-            app:layout_constraintStart_toStartOf="@id/tvTituloDemanda"
-            app:layout_constraintTop_toBottomOf="@id/tvTituloDemanda" />
+            app:layout_constraintEnd_toEndOf="@id/tvTituloOS"
+            app:layout_constraintStart_toStartOf="@id/tvTituloOS"
+            app:layout_constraintTop_toBottomOf="@id/tvTituloOS" />
 
         <View
             android:id="@+id/divider"
@@ -78,7 +81,7 @@
             android:layout_height="1dp"
             android:layout_marginTop="16dp"
             android:background="#EDF2F7"
-            app:layout_constraintTop_toBottomOf="@id/tvDescricaoCurta" />
+            app:layout_constraintTop_toBottomOf="@id/tvDescricaoOS" />
 
         <TextView
             android:id="@+id/tvHorario"
@@ -88,12 +91,13 @@
             android:text="Recebido às 09:30"
             android:textColor="#94A3B8"
             android:textSize="12sp"
-            app:layout_constraintBottom_toBottomOf="@id/btnVerDetalhes"
+            app:layout_constraintBottom_toBottomOf="@id/btnDetalhesOS"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/btnVerDetalhes" />
+            app:layout_constraintTop_toTopOf="@id/btnDetalhesOS" />
 
+        <!-- ✅ btnVerDetalhes → btnDetalhesOS -->
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnVerDetalhes"
+            android:id="@+id/btnDetalhesOS"
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
