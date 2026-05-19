@@ -21,7 +21,7 @@ import retrofit2.http.Query;
 public interface ApiService {
 
     // ─── Autenticação ────────────────────────────────────────────────────
-    @POST("usuarios/login")
+    @POST("auth/login")
     Call<LoginResponse> login(@Body LoginRequest loginRequest);
 
     // ─── Usuários ────────────────────────────────────────────────────────

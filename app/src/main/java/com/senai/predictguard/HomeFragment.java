@@ -2,11 +2,15 @@ package com.senai.predictguard;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -35,15 +39,18 @@ import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
 
-    private TextView    tvWelcomeTec;
-    private TextView    tvDemandas;
-    private TextView    tvTipoUsuario;
+    private TextView     tvWelcomeTec;
+    private TextView     tvDemandas;
+    private TextView     tvTipoUsuario;
     private RecyclerView recyclerOS;
     private ProgressBar  progressBar;
 
-    private OSAdapter     osAdapter;
-    private List<OS> listaOS = new ArrayList<>();
+    private OSAdapter      osAdapter;
+    private List<OS>       listaOS = new ArrayList<>();
     private SessionManager sessionManager;
+
+    private static final String[] STATUS_DISPLAY  = {"Solicitado", "Em Andamento", "Concluído"};
+    private static final String[] STATUS_API      = {"solicitado", "em_andamento", "concluido"};
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -57,23 +64,19 @@ public class HomeFragment extends Fragment {
 
         sessionManager = new SessionManager(requireContext());
 
-        // ── Vinculação de views (IDs do activity_home.xml existente) ──────
         tvWelcomeTec  = view.findViewById(R.id.tvWelcomeTec);
         tvDemandas    = view.findViewById(R.id.tvDemandas);
         tvTipoUsuario = view.findViewById(R.id.tvTipoUsuario);
         recyclerOS    = view.findViewById(R.id.rvDemands);
         progressBar   = view.findViewById(R.id.progressBar);
 
-        // ── Exibir dados do usuário logado ───────────────────────────────
         exibirDadosUsuario();
 
-        // ── Configurar RecyclerView ───────────────────────────────────────
         osAdapter = new OSAdapter(listaOS, this::abrirDialogDetalhes);
         recyclerOS.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerOS.setAdapter(osAdapter);
 
-        // ── Buscar demandas da API ────────────────────────────────────────
-        buscarServicos();
+        new Handler(Looper.getMainLooper()).postDelayed(this::buscarServicos, 300);
     }
 
     private void exibirDadosUsuario() {
@@ -89,6 +92,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void buscarServicos() {
+        if (!isAdded()) return;
         if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
 
         RetrofitClient.getApiService()
@@ -98,24 +102,30 @@ public class HomeFragment extends Fragment {
                     @Override
                     public void onResponse(Call<ServicoListResponse> call,
                                            Response<ServicoListResponse> response) {
+                        if (!isAdded()) return;
                         if (progressBar != null) progressBar.setVisibility(View.GONE);
 
                         if (response.isSuccessful() && response.body() != null) {
                             ServicoListResponse body = response.body();
 
                             if (body.isSucesso() && body.getDados() != null) {
-                                osAdapter.atualizarLista(body.getDados());
 
-                                // Atualiza o contador de demandas
-                                int total = body.getPaginacao() != null
-                                        ? body.getPaginacao().getTotal()
-                                        : body.getDados().size();
+                                // ✅ FIX: filtra apenas OS não concluídas/canceladas
+                                List<OS> osDisponiveis = new ArrayList<>();
+                                for (OS os : body.getDados()) {
+                                    String status = os.getServicoStatus();
+                                    if (!"concluido".equals(status) && !"cancelado".equals(status)) {
+                                        osDisponiveis.add(os);
+                                    }
+                                }
 
+                                osAdapter.atualizarLista(osDisponiveis);
+
+                                int total = osDisponiveis.size();
                                 if (tvDemandas != null) {
-                                    tvDemandas.setText("Você tem " + total + " demandas");
+                                    tvDemandas.setText("Você tem " + total + " demanda" + (total != 1 ? "s" : ""));
                                 }
                             }
-
                         } else if (response.code() == 401) {
                             Toast.makeText(requireContext(),
                                     "Sessão expirada. Faça login novamente.",
@@ -129,15 +139,16 @@ public class HomeFragment extends Fragment {
 
                     @Override
                     public void onFailure(Call<ServicoListResponse> call, Throwable t) {
+                        if (!isAdded()) return;
                         if (progressBar != null) progressBar.setVisibility(View.GONE);
-                        Toast.makeText(requireContext(),
-                                "Sem conexão com o servidor.",
-                                Toast.LENGTH_SHORT).show();
+
+                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                            if (isAdded()) buscarServicos();
+                        }, 1000);
                     }
                 });
     }
 
-    // ── Dialog de detalhes + atualização de status da OS ─────────────────
     private void abrirDialogDetalhes(OS servico) {
         View dialogView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_os_detalhes, null);
@@ -149,8 +160,9 @@ public class HomeFragment extends Fragment {
         TextView tvData        = dialogView.findViewById(R.id.tvDialogOSData);
         Spinner  spStatus      = dialogView.findViewById(R.id.spDialogOSStatus);
         EditText etObservacao  = dialogView.findViewById(R.id.etDialogOSObservacao);
+        Button   btnFinalizar  = dialogView.findViewById(R.id.btnFinalizar);
+        ImageButton btnBack    = dialogView.findViewById(R.id.btnBack);
 
-        // Preenche os dados
         tvId.setText("OS #" + servico.getId());
         tvTipo.setText(servico.getTipo() != null ? servico.getTipo() : "-");
         tvDesc.setText(servico.getDescricao() != null ? servico.getDescricao() : "Sem descrição");
@@ -162,33 +174,35 @@ public class HomeFragment extends Fragment {
             etObservacao.setText(servico.getObservacao());
         }
 
-        // Spinner de status
-        String[] statusOptions = {"Solicitado", "Em Andamento", "Concluído"};
         ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(
-                requireContext(), android.R.layout.simple_spinner_item, statusOptions);
+                requireContext(), android.R.layout.simple_spinner_item, STATUS_DISPLAY);
         statusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spStatus.setAdapter(statusAdapter);
 
-        // Seleciona o status atual
         if (servico.getServicoStatus() != null) {
-            for (int i = 0; i < statusOptions.length; i++) {
-                if (statusOptions[i].equals(servico.getServicoStatus())) {
+            for (int i = 0; i < STATUS_API.length; i++) {
+                if (STATUS_API[i].equals(servico.getServicoStatus())) {
                     spStatus.setSelection(i);
                     break;
                 }
             }
         }
 
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Detalhes da OS")
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
                 .setView(dialogView)
-                .setPositiveButton("Salvar", (dialog, which) -> {
-                    String novoStatus = spStatus.getSelectedItem().toString();
-                    String observacao = etObservacao.getText().toString().trim();
-                    atualizarServico(servico.getId(), novoStatus, observacao);
-                })
-                .setNegativeButton("Fechar", null)
-                .show();
+                .create();
+
+        btnFinalizar.setOnClickListener(v -> {
+            int idx = spStatus.getSelectedItemPosition();
+            String novoStatusApi = STATUS_API[idx];
+            String observacao    = etObservacao.getText().toString().trim();
+            dialog.dismiss();
+            atualizarServico(servico.getId(), novoStatusApi, observacao);
+        });
+
+        btnBack.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
 
     private void atualizarServico(int servicoId, String novoStatus, String observacao) {
@@ -201,10 +215,11 @@ public class HomeFragment extends Fragment {
                     @Override
                     public void onResponse(Call<GenericResponse> call,
                                            Response<GenericResponse> response) {
+                        if (!isAdded()) return;
                         if (response.isSuccessful()) {
                             Toast.makeText(requireContext(),
                                     "OS atualizada com sucesso!", Toast.LENGTH_SHORT).show();
-                            buscarServicos(); // Recarrega a lista
+                            buscarServicos();
                         } else {
                             Toast.makeText(requireContext(),
                                     "Erro ao atualizar OS.", Toast.LENGTH_SHORT).show();
@@ -213,6 +228,7 @@ public class HomeFragment extends Fragment {
 
                     @Override
                     public void onFailure(Call<GenericResponse> call, Throwable t) {
+                        if (!isAdded()) return;
                         Toast.makeText(requireContext(),
                                 "Sem conexão.", Toast.LENGTH_SHORT).show();
                     }

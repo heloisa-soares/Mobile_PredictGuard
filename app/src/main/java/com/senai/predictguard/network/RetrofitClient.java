@@ -14,7 +14,7 @@ public class RetrofitClient {
     //   → Dispositivo físico na mesma rede Wi-Fi: "http://192.168.X.X:3001/"
     //   → Servidor em nuvem: "https://seu-dominio.com/"0020
     // ──────────────────────────────────────────────────────────────────────
-    private static final String BASE_URL = "192.168.2.1";
+    private static final String BASE_URL = "http://192.168.4.200:3001/";
 
     private static Retrofit retrofit;
 
